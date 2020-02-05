@@ -4,7 +4,7 @@ import joi from '@hapi/joi';
 import {
   getContacts,
   getContactByID,
-  createContact
+  createContact,
 } from '../controllers/contact';
 
 const router = Router();

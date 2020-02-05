@@ -7,6 +7,7 @@ require('dotenv').config();
  */
 
 var app = require('../dist/app').default;
+var postgres = require('../dist/model/contacts-postgres');
 var debug = require('debug')('express-sq004:server');
 var http = require('http');
 var mongoose = require('mongoose');
@@ -21,12 +22,17 @@ app.set('port', port);
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true
+  useCreateIndex: true,
 });
 
 mongoose.connection.on('connected', mongoDBConnected);
 mongoose.connection.on('disconnected', mongoDBDisconnected);
 mongoose.connection.on('error', mongoDBError);
+
+postgres
+  .authenticate()
+  .then(pgConnected)
+  .catch(pgError);
 
 /**
  * Create HTTP server.
@@ -99,13 +105,21 @@ function onListening() {
 }
 
 function mongoDBConnected() {
-  console.log('DB connected successfully');
+  debug('DB connected successfully');
 }
 
 function mongoDBDisconnected() {
-  console.log('DB disconnected');
+  debug('DB disconnected');
 }
 
 function mongoDBError(err) {
   console.error('DB Error %o', err);
+}
+
+function pgConnected() {
+  debug('Postgres Connected');
+}
+
+function pgError(err) {
+  console.error(err);
 }

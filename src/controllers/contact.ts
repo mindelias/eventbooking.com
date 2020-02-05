@@ -1,25 +1,28 @@
 import joi from '@hapi/joi';
-import uuid from 'uuid';
 
-import ContactMongo, { Contact } from '../model/contacts';
+import { db, sql, ContactsTable } from '../model/contacts-postgres';
 
 export async function getContacts() {
-  return ContactMongo.find();
+  return db.query(sql`SELECT * FROM contacts;`);
 }
 
 export async function getContactByID(contactID: string) {
-  return ContactMongo.find({ id: contactID });
+  return db
+    .query(sql`SELECT * FROM contacts WHERE id= ${contactID}`)
+    .then(data => {
+      return data[0];
+    });
 }
 
-type CreateContact = Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>;
+type CreateContact = Omit<ContactsTable, 'id' | 'created_at' | 'updated_at'>;
 
 const createContactSchema = joi.object<CreateContact>({
-  firstName: joi
+  first_name: joi
     .string()
     .trim()
     .required(),
 
-  lastName: joi.string().trim(),
+  last_name: joi.string().trim(),
 
   phone: joi
     .string()
@@ -31,28 +34,23 @@ const createContactSchema = joi.object<CreateContact>({
     .trim()
     .email(),
 
-  company: joi.string().trim()
+  company: joi.string().trim(),
 });
 
 export function createContact(contact: CreateContact) {
   const { error, value } = createContactSchema.validate(contact, {
     abortEarly: false,
-    stripUnknown: true
+    stripUnknown: true,
   });
 
   if (error) {
     throw error;
   }
 
-  const id = uuid.v4();
-  const date = new Date().toISOString();
-
-  const newContact = new ContactMongo({
-    ...value,
-    id,
-    createdAt: date,
-    updatedAt: date
-  });
-
-  return newContact.save();
+  return db.query(
+    sql`INSERT INTO contacts(first_name, last_name, phone, email, company)
+    VALUES (${value.first_name}, ${value.last_name}, ${value.phone}, ${value.email}, ${value.company})
+    RETURNING *
+    `
+  );
 }
