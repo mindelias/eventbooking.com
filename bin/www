@@ -7,7 +7,7 @@ require('dotenv').config();
  */
 
 var app = require('../dist/app').default;
-var postgres = require('../dist/model/contacts-postgres');
+// var postgres = require('../dist/model/contacts-postgres');
 var debug = require('debug')('express-sq004:server');
 var http = require('http');
 var mongoose = require('mongoose');
@@ -29,10 +29,6 @@ mongoose.connection.on('connected', mongoDBConnected);
 mongoose.connection.on('disconnected', mongoDBDisconnected);
 mongoose.connection.on('error', mongoDBError);
 
-postgres
-  .authenticate()
-  .then(pgConnected)
-  .catch(pgError);
 
 /**
  * Create HTTP server.
@@ -44,7 +40,7 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+server.listen(port, () => console.log(`server is running on port ${port}`));
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -105,7 +101,7 @@ function onListening() {
 }
 
 function mongoDBConnected() {
-  debug('DB connected successfully');
+  console.log('MONGODB is connected succesfully');
 }
 
 function mongoDBDisconnected() {
@@ -116,10 +112,4 @@ function mongoDBError(err) {
   console.error('DB Error %o', err);
 }
 
-function pgConnected() {
-  debug('Postgres Connected');
-}
-
-function pgError(err) {
-  console.error(err);
-}
+ 
