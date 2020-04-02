@@ -3,13 +3,29 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import logger from 'morgan';
 import graphQlHTTP from 'express-graphql';
+// import { buildSchema } from 'graphql';
 import expressBunyan from 'express-bunyan-logger';
+// import Event from './model/event';
 
 import indexRouter from './routes/index';
 import contactRouter from './routes/contact';
 import schema from './schema';
 
 const app = express();
+
+// interface EventType {
+//   _id: string;
+//   title: string;
+//   description: string;
+//   price: number;
+//   date: string;
+// }
+// type inputType = Omit<EventType, "id" | "date">
+// interface input{
+//   eventInput:object<inputType>
+// }
+// const events: EventType[] = [];
+
 
 // view engine setup
 app.set('views', path.join(__dirname, '../', 'views'));
@@ -55,3 +71,56 @@ app.use(function(
 });
 
 export default app;
+
+
+// : buildSchema(`
+//       type Event {
+//         _id: ID!
+//         title: String!
+//         description: String!
+//         price:  Int!
+//         date: String!  
+
+//       }
+//       input EventInput {   
+//         title: String!
+//         description: String!
+//         price: Int! 
+//       }
+
+//       type RootQuery {
+//         events: [Event!]!
+
+//       }
+//       type RootMutation{
+//         createEvent(eventInput: EventInput): Event
+//       }
+      
+//       schema {
+//         query: RootQuery
+//         mutation: RootMutation
+//       }
+//     `),
+//   rootValue: {
+//   events: () => {
+//     return Event.find().then(events => {
+//       return events
+//     }).catch(error => {
+//       throw error
+//     })
+//   },
+//     createEvent: (args: any) => {
+//       const event = new Event({
+//         title: args.eventInput.title,
+//         description: args.eventInput.description,
+//         price: args.eventInput.price,
+//       });
+//       return event
+//         .save()
+//         .then(result => {
+//           console.log(result);
+//           return result;
+//         })
+//         .catch(err => console.log(err));
+//     }
+// }
