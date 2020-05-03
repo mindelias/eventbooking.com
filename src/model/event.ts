@@ -7,18 +7,22 @@ export type EventType = {
   title: string;
   description: string;
   price: number;
-  date: string;
+  date: string | Date;
 };
 
 export type EventTypePartial = Omit<EventType, "id" | "date">
-// type EventType = Event & mongoose.Document;
+type EventDoc = Event & mongoose.Document;
 
 const eventsSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: Number, required: true },
   date: { type: Date, default: Date.now(), required: true },
-  eventImage: { type: String }
+  image: { type: String },
+  user_id: {
+    type: mongoose.Types.ObjectId,
+    ref:'User'
+  }
 });
 
-export default mongoose.model('Event', eventsSchema);
+export default mongoose.model<EventDoc>('Event', eventsSchema);
