@@ -18,6 +18,7 @@ const createContactSchema = joi.object({
     .required(),
 
   price: joi.number().required(),
+  image:joi.string()
 });
 
 export function AddEvent(eventInput: EventTypePartial) {
