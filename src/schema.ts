@@ -1,6 +1,5 @@
 import {
   GraphQLObjectType,
-  GraphQLString,
   GraphQLNonNull,
   GraphQLList,
   GraphQLSchema,
@@ -8,16 +7,40 @@ import {
 } from 'graphql';
 
  import {EventType, EventInputType} from './types/events';
- import {getEvents, AddEvent} from './controllers/event';
+import { getEvents, AddEvent } from './controllers/event';
+import {Authenticate} from './helpers/authMiddleware'
+import {getLoggedUsers, AddNewUsers, Login, getAllUsers} from './controllers/auth'
+import { UserType, UserInputType, UserInputLoginType, UserTypeToken } from './types/user';
+ 
+
+
+
 
 const query = new GraphQLObjectType({
   name: 'RootQuery',
   description: 'All the query that our schema supports',
   fields: () => ({
-    allContacts: {
+    events: {
       type: new GraphQLList(EventType),
       description: 'Get all events',
       resolve: () => getEvents(),
+    },
+    GetAllUser: {
+      type: new GraphQLList(UserType),
+      description: 'Get all events',
+      resolve: () => getAllUsers(),
+    },
+    GetLoginUser: {
+      type: UserType,
+      description: 'get a single user',
+      resolve: async (obj, _args, { req, res, next }) => {
+        try {
+          await Authenticate(req, res, next);
+          return getLoggedUsers(obj.id);
+        } catch (err) {
+          return [];
+        }
+      },
     },
     // contactByID: {
     //   type: ContactType,
@@ -43,15 +66,38 @@ const mutation = new GraphQLObjectType({
       type: EventType,
       description: 'Add a single event',
       args: {
-        eventInput: {
-          type: new GraphQLNonNull(EventInputType)
-        }
+        eventInp: {
+          type: new GraphQLNonNull(EventInputType),
+        },
       },
-      resolve: (_, { eventInput}) => {
-        return AddEvent(eventInput);
+      resolve: (_, { eventInp }) => {
+        return AddEvent(eventInp);
       },
     },
-     
+    signUp: {
+      type: UserTypeToken,
+      description: 'Add a single user',
+      args: {
+        userInput: {
+          type: new GraphQLNonNull(UserInputType),
+        },
+      },
+      resolve: (_, { userInput }) => {
+        return AddNewUsers(userInput);
+      },
+    },
+    signIn: {
+      type: UserTypeToken,
+      description: 'login a single user',
+      args: {
+        userInput: {
+          type: new GraphQLNonNull(UserInputLoginType),
+        },
+      },
+      resolve: (_, { userInput }) => {
+        return Login(userInput);
+      },
+    },
   }),
 });
 
