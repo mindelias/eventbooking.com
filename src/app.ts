@@ -3,8 +3,10 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import logger from 'morgan';
 import graphQlHTTP from 'express-graphql';
+// import cors from 'cors';
+// import bodyParser from 'body-parser'
 // import { buildSchema } from 'graphql';
-import expressBunyan from 'express-bunyan-logger';
+// import expressBunyan from 'express-bunyan-logger';
 // import Event from './model/event';
 
 import indexRouter from './routes/index';
@@ -13,19 +15,6 @@ import schema from './schema';
 
 const app = express();
 
-// interface EventType {
-//   _id: string;
-//   title: string;
-//   description: string;
-//   price: number;
-//   date: string;
-// }
-// type inputType = Omit<EventType, "id" | "date">
-// interface input{
-//   eventInput:object<inputType>
-// }
-// const events: EventType[] = [];
-
 
 // view engine setup
 app.set('views', path.join(__dirname, '../', 'views'));
@@ -33,22 +22,31 @@ app.set('view engine', 'ejs');
 
 app.disable('x-powered-by');
 app.use(logger('dev'));
-app.use(expressBunyan());
+// app.use(expressBunyan());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
+
 app.use(express.static(path.join(__dirname, '../', 'public')));
 
 app.use('/', indexRouter);
 app.use('/api', contactRouter);
 
-app.use(
-  '/graphql',
+// app.use(
+//   '/graphql',
+//   graphQlHTTP({
+//     schema,
+//     graphiql: true,
+//   })
+// );
+
+app.use('/graphql',  (req, res) => {
   graphQlHTTP({
     schema,
     graphiql: true,
-  })
-);
-
+    context: { req },
+  })(req, res);
+});
 // catch 404 and forward to error handler
 app.use(function(_req, _res, next) {
   next(createError(404));
